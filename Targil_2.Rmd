@@ -1,0 +1,238 @@
+---
+title: "ex_2"
+author: "Gil - 315440230, Gilay - 205477599 and Omer - 314761321"
+date: "16 4 2022"
+output: html_document
+---
+
+```{r}
+library(tidyverse) ; library(ggplot2); library(dplyr);library(factoextra);
+```
+
+# 1
+
+```{r setup, include=FALSE}
+#  The number of test trips 
+n = 1000
+#  The number of times you've been caught in the rain
+get_wet = 0
+# A The number of parachutes 
+a_um = 2
+# B The number of parachutes 
+b_um =0
+#  Out of the door / get home 
+status = list('go', 'back')
+
+for (i in 1:n){
+    for (tiul in status){
+        if (tiul == 'go'){
+            if (rbinom(n = 1, size = 1, prob = 0.5) == 1){
+                if (a_um > 0){
+                    a_um = a_um - 1
+                    b_um = b_um + 1
+                    get_wet = get_wet + 0
+                }
+                else{
+                    get_wet = get_wet + 1
+                }
+            }
+            else{
+                get_wet = get_wet + 0
+            }
+        }
+        else{
+            if (rbinom(n = 1, size = 1, prob = 0.5) == 1){
+                if (b_um > 0){
+                    b_um = b_um + 1
+                    a_um = a_um + 1
+                    get_wet = get_wet + 0}
+                else{
+                    get_wet = get_wet + 1}
+            }
+            else{
+                get_wet = get_wet + 0}
+        }}
+
+                    }
+print(get_wet/n)
+```
+
+### c
+
+נשים לב שבבעיה הזו, בכל שלב, אנחנו יודעים את מספר המטריות שנשארו בשלב הקודם בכל מקום, כלומר גם בבית וגם במשרד. בנוסף, אנו יודעים את מספר הפעמים שהפרופסורית נרטבה עד לנקודת הזמן הנוכחית, ומידע זה מספיק לנו על מנת לאמוד את המאורע הבא, ללא תלות בשאר האירועים שקדמו למאורע האחרון.
+
+דרך אחרת שבה ניסינו לראות את זה, שבכל צעד בסימולציה למעשה מדובר בניסוי ברנולי, שמקלב ערך בינארי האם היא נרטבה או לא. בעצם, אנחנו סופרים בכל שלב את מספר הניסויים הברנוליים שעברו עד לפעם בו היא נרטבה, וידוע שעבור ההתפלגות הגיאומטרית אכן מתקיימת תכונת החוסר זיכרון.
+
+
+# 2
+
+### sections A-E
+
+```{r setup, include=FALSE}
+# M/M/1 queue simulator
+lambda <- 1 # arrival rate
+mu <- 2 # service rate
+duration <- 10000 # total duration of the simulation
+t <- 0 # current time in the simulation
+queue <- 0 # start with empty queue
+s <- 0 # running sum for computing average queue length
+
+# first arrival to start process
+T1 <- rexp(1,rate=mu) # סעיף a
+currentqueue <- 1
+eventsTime <- T1
+t <- T1
+nEvents <- 1 # total number of events that have occurred
+
+while (t<duration) {
+  nEvents <- nEvents+1
+  if(currentqueue>0) { # nonempty queue
+    T1 <- rexp(1,rate=lambda+mu) # time until next event
+# is event an arrival or departure?
+    p <- runif(1,0,1)
+    queue[nEvents] <- currentqueue # how many have been in queue before this new event
+    currentqueue <- ifelse(p<lambda/(lambda+mu),
+      currentqueue+1, # arrival
+      currentqueue-1) # departure
+  } else { # empty queue
+    T1 <- rexp(1,rate=lambda)
+    queue[nEvents] <- currentqueue
+    currentqueue <- 1
+  }
+t <- t+T1 # time of next arrival
+eventsTime[nEvents] <- T1 # inter-event time
+s <- s+T1*queue[nEvents] # spent T1 at nth queue length
+}
+```
+
+### section F
+
+```{r}
+data_to_graph <- data.frame(queue)
+
+data_to_graph <- data_to_graph %>% group_by(queue) %>% count()
+data_to_graph$queue <- as.numeric(data_to_graph$queue)
+knitr::kable(t(data_to_graph), "html")
+
+ggplot(data_to_graph,aes(x=queue,y=n)) + geom_bar(stat="identity",fill='blue') +scale_x_continuous(breaks = seq(0, 13, by = 1)) + ggtitle('Queue distribution before each event')
+
+```
+
+
+```{r}
+plot(cumsum(eventsTime),queue,type="s", xlab="Time",ylab="Queue length",
+main=paste("M/M/1 Simulation, mean queue length=",round(s/t,4)))
+
+```
+
+```{r}
+# M/M/1 queue simulator
+lambda_g <- 1 # arrival rate
+mu_g <- 2 # service rate
+duration_g <- 10000 # total duration of the simulation
+t_g <- 0 # current time in the simulation
+queue_g <- 0 # start with empty queue
+s_g <- 0 # running sum for computing average queue length
+
+# no one arrived yet
+T1_g <- 0 # סעיף a
+currentqueue_g <- 0
+eventsTime_g <- T1_g
+t_g <- T1_g
+nEvents_g <- 0 # total number of events that have occurred
+
+while (t_g<duration_g) {
+  nEvents_g <- nEvents_g+1
+  if(currentqueue_g>0) { # nonempty queue
+    T1_g <- runif(1,0,2) # time until next event
+# is event an arrival or departure?
+    p <- runif(1,0,1)
+    queue_g[nEvents_g] <- currentqueue_g # how many have been in queue before this new event
+    currentqueue_g <- ifelse(p<lambda_g/(lambda_g+mu_h),
+      currentqueue_g+1, # arrival
+      currentqueue_g-1) # departure
+  } else { # empty queue
+    T1_g <- rexp(1,rate=lambda_g)
+    queue_g[nEvents_g] <- currentqueue_g
+    currentqueue_g <- 1
+  }
+t_g <- t_g+T1_g # time of next arrival
+eventsTime_g[nEvents_g] <- T1_g # inter-event time
+s_g <- s_g+T1_g*queue_g[nEvents_g] # spent T1 at nth queue length
+}
+```
+
+```{r}
+data_to_graph_g <- data.frame(queue_g)
+
+data_to_graph_g <- data_to_graph_g %>% group_by(queue_g) %>% count()
+data_to_graph_g$queue_g <- as.numeric(data_to_graph_g$queue_g)
+knitr::kable(t(data_to_graph_g), "html")
+
+ggplot(data_to_graph_g,aes(x=queue_g,y=n)) + geom_bar(stat="identity",fill='blue')  + ggtitle('Queue distribution before each event') + scale_x_continuous(breaks = seq(0, 13, by = 1))
+```
+
+```{r}
+plot(cumsum(eventsTime_g),queue_g,type="s", xlab="Time",ylab="Queue length",
+main=paste("M/M/1 Simulation, mean queue length=",round(s_g/t_g,4)))
+```
+
+בסימולציה הזו, לעומת הראשונה שעשינו, אנחנו בעצם מנסים לאמוד כמה זמן ייקח לאדם הראשון להגיע לאירוע הראשון, וכיצד זה ישפיע על שאר האירועים. ניתן לראות מהגרפים הבאים, שההבדל לא השפיע או שינה בין המצב בו נתון לנו כמה זמן לקח לאדם הראשון, לבין המצב בו אנו אומדים זאת.
+
+### H simulation
+
+```{r}
+# M/M/1 queue simulator
+lambda_h <- 1 # arrival rate
+mu_h <- 2 # service rate
+duration_h <- 10000 # total duration of the simulation
+t_h <- 0 # current time in the simulation
+queue_h <- 0 # start with empty queue
+s_h <- 0 # running sum for computing average queue length
+
+# first arrival to start process
+T1_h <- rexp(1,rate=mu) # סעיף a
+currentqueue_h <- 1
+eventsTime_h <- T1
+t_h <- T1_h
+nEvents_h <- 1 # total number of events that have occurred
+
+while (t_h<duration_h) {
+  nEvents_h <- nEvents_h+1
+  if(currentqueue_h>0) { # nonempty queue
+    T1_h <- runif(1,0,2) # time until next event
+# is event an arrival or departure?
+    p <- runif(1,0,1)
+    queue_h[nEvents_h] <- currentqueue_h # how many have been in queue before this new event
+    currentqueue_h <- ifelse(p<lambda_h/(lambda_h+mu_h),
+      currentqueue_h+1, # arrival
+      currentqueue_h-1) # departure
+  } else { # empty queue
+    T1_h <- rexp(1,rate=lambda_h)
+    queue_h[nEvents_h] <- currentqueue_h
+    currentqueue_h <- 1
+  }
+t_h <- t_h+T1_h # time of next arrival
+eventsTime_h[nEvents_h] <- T1_h # inter-event time
+s_h <- s_h+T1_h*queue_h[nEvents_h] # spent T1 at nth queue length
+}
+```
+
+## H graph
+
+```{r}
+data_to_graph_h <- data.frame(queue_h)
+
+data_to_graph_h <- data_to_graph_h %>% group_by(queue_h) %>% count()
+data_to_graph_h$queue_h <- as.numeric(data_to_graph_h$queue_h)
+knitr::kable(t(data_to_graph_h), "html")
+
+ggplot(data_to_graph_h,aes(x=queue_h,y=n)) + geom_bar(stat="identity",fill='blue')  + ggtitle('Queue distribution before each event')+scale_x_continuous(breaks = seq(0, 11, by = 1))
+```
+
+```{r}
+plot(cumsum(eventsTime_h),queue_h,type="s", xlab="Time",ylab="Queue length",
+main=paste("M/M/1 Simulation, mean queue length=",round(s_h/t_h,4)))
+```
+
+
