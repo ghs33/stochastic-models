@@ -1,0 +1,96 @@
+---
+
+title: 'תרגיל 1 - גיל שילה - 315440230 ועומר קשת - 314761321'
+
+output:
+
+  html_document: default
+
+  pdf_document: default
+
+---
+
+```{r, echo = FALSE, results = 'hide', warning=FALSE, message=FALSE}
+library(tidyverse) ; library(ggplot2); library(dplyr) ; library(scales)
+
+```
+
+
+```{r}
+membership_2015 <- read.csv(file = 'C:/Users/97254/OneDrive/שולחן העבודה/stochestic/Membership2015.csv')
+membership_2016 <- read.csv(file = 'C:/Users/97254/OneDrive/שולחן העבודה/stochestic/Membership2016.csv')
+membership_2017 <- read.csv(file = 'C:/Users/97254/OneDrive/שולחן העבודה/stochestic/Membership2017.csv')
+```
+
+### a
+
+```{r}
+membership_2017$today <- 2017
+membership_2017$diff <- membership_2017$today - membership_2017$MemberSince
+# mean_2017 <- mean(membership_2017_e$diff, na.rm=TRUE)
+```
+
+```{r}
+membership_2016$today <- 2016
+membership_2016$diff <- membership_2016$today - membership_2016$MemberSince
+mean_2016 <- mean(membership_2016$diff, na.rm=TRUE)
+```
+
+
+```{r}
+no_active_2016 <- membership_2016 %>% filter(Active == 0)
+suspect_16 <- no_active_2016 %>% group_by(diff) %>% summarise(sum = length(diff))
+
+x<-no_active_2016$ID
+for(i in 1:length(x))
+{membership_2017 <- filter(membership_2017,membership_2017$ID != x[i])}
+mean_2017 <- mean(membership_2017$diff, na.rm=TRUE)
+diff_17_16 <- (mean_2017 - mean_2016)
+diff_17_16
+```
+ניתן לראות שבממוצע משך ההשארות של הלקוחות המנויים בכל שנה גדל בכ0.5 בשנת 2017 לעומת שנת 2016.
+
+### b + c
+
+```{r}
+no_active_2017 <- membership_2017 %>% filter(Active == 0)
+x<-no_active_2016$ID
+for(i in 1:length(x))
+{no_active_2017 <- filter(no_active_2017,no_active_2017$ID != x[i])}
+
+suspect_17 <- no_active_2017 %>% group_by(diff) %>% summarise(sum = length(diff))
+```
+
+```{r}
+plot_16 <- ggplot(suspect_16,aes(x=diff,y=sum)) + 
+  scale_x_continuous(breaks = seq(0, 10, by = 1)) + geom_col(fill = suspect_16$diff) + xlab('Period of membership') + ylab('No active')
+```
+```{r}
+print(suspect_16)
+```
+```{r}
+plot_16
+```
+
+גרף זה מציג את כמות הלקוחות שעוזבים את החדר כושר לפי הותק, נכון לשנת 2016. ניתן לראות בשנה הראשונה עוזבים כמות גדולה מאוד של לקוחות ביחס לשנים האחרות.
+
+```{r}
+plot_17 <- ggplot(suspect_17,aes(x=diff,y=sum)) + 
+  scale_x_continuous(breaks = seq(0, 11, by = 1)) + geom_col(fill = suspect_17$diff) + xlab('Period of membership') + ylab('No active')
+```
+```{r}
+print(suspect_17)
+```
+```{r}
+plot_17
+```
+
+גם בשנת 2017 ניתן לראות שהתצפית החריגה היא שבשנה הראשונה עוזבים הכי הרבה לקוחות.
+
+
+### c
+
+מהגרפים של הסעיפים הקודמים אנו למדים שצריך להתמקד במאמצים של השארת הלקוחות בשנה הראשונה שלהם. ניתן לראות שבשנים הראשונות יש עזיבה של הלקוחות החדשים ולאחר מכן התייצבות יחסית של כמות העוזבים בכל שנה.
+
+
+
